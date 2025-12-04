@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .controls {
+            position: absolute; top: 10px; left: 10px; z-index: 1000;
+            background: white; padding: 15px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 300px;
+        }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .input-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn {
+            background: #007bff; color: white; border: none; padding: 10px 15px;
+            border-radius: 4px; cursor: pointer; margin: 5px 5px 0 0;
+        }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>Leaflet Map Test</h3>
+        <div class="input-group">
+            <label>Pickup:</label>
+            <input type="text" id="pickup" placeholder="Delhi" value="Delhi">
+        </div>
+        <div class="input-group">
+            <label>Drop:</label>
+            <input type="text" id="dropoff" placeholder="Mumbai" value="Mumbai">
+        </div>
+        <button class="btn" onclick="testRoute()">Test Route</button>
+        <button class="btn" onclick="testDrivers()">Test Drivers</button>
+    </div>
+    
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered on Delhi
+        const map = L.map('map').setView([28.6139, 77.2090], 10);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        let markers = [];
+        
+        // Test route function
+        function testRoute() {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            // Delhi coordinates
+            const delhi = [28.6139, 77.2090];
+            const mumbai = [19.0760, 72.8777];
+            
+            // Add markers
+            const pickupMarker = L.marker(delhi).addTo(map).bindPopup('Delhi (Pickup)');
+            const dropMarker = L.marker(mumbai).addTo(map).bindPopup('Mumbai (Drop)');
+            
+            markers.push(pickupMarker, dropMarker);
+            
+            // Draw route line
+            const routeLine = L.polyline([delhi, mumbai], {color: 'blue', weight: 4}).addTo(map);
+            markers.push(routeLine);
+            
+            // Fit map to show both cities
+            map.fitBounds([delhi, mumbai]);
+            
+            alert('Route from Delhi to Mumbai displayed!');
+        }
+        
+        // Test drivers function
+        function testDrivers() {
+            const center = map.getCenter();
+            
+            // Generate 5 random driver locations around current center
+            for (let i = 0; i < 5; i++) {
+                const lat = center.lat + (Math.random() - 0.5) * 0.1;
+                const lng = center.lng + (Math.random() - 0.5) * 0.1;
+                
+                const driverIcon = L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+                
+                const marker = L.marker([lat, lng], { icon: driverIcon })
+                    .addTo(map)
+                    .bindPopup(`Driver ${i+1}<br>Rating: ${(3.5 + Math.random() * 1.5).toFixed(1)}⭐`);
+                
+                markers.push(marker);
+            }
+            
+            alert('5 nearby drivers added to map!');
+        }
+        
+        // Click handler for map
+        map.on('click', function(e) {
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`Clicked at: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`)
+                .openOn(map);
+        });
+    </script>
+</body>
+</html>

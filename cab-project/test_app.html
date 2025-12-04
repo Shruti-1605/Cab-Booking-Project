@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cab Booking Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        input, button { padding: 10px; margin: 5px; width: 100%; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        .result { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Cab Booking Test</h1>
+        
+        <h3>1. Test Backend Connection</h3>
+        <button onclick="testBackend()">Test Backend</button>
+        <div id="backendResult" class="result"></div>
+        
+        <h3>2. Get Fare Estimate</h3>
+        <input type="text" id="pickup" placeholder="Pickup Location" value="Mumbai">
+        <input type="text" id="dropoff" placeholder="Drop Location" value="Pune">
+        <button onclick="getFare()">Get Fare Estimate</button>
+        <div id="fareResult" class="result"></div>
+        
+        <h3>3. Book Cab</h3>
+        <button onclick="bookCab()">Book Cab (ID: 1)</button>
+        <div id="bookingResult" class="result"></div>
+    </div>
+
+    <script>
+        async function testBackend() {
+            try {
+                const response = await fetch('http://localhost:8000/');
+                const data = await response.json();
+                document.getElementById('backendResult').innerHTML = 
+                    `✅ Backend Connected: ${JSON.stringify(data)}`;
+            } catch (error) {
+                document.getElementById('backendResult').innerHTML = 
+                    `❌ Backend Error: ${error.message}`;
+            }
+        }
+
+        async function getFare() {
+            const pickup = document.getElementById('pickup').value;
+            const dropoff = document.getElementById('dropoff').value;
+            
+            try {
+                const response = await fetch(`http://localhost:8000/fare/estimate?pickup=${pickup}&destination=${dropoff}`);
+                const data = await response.json();
+                document.getElementById('fareResult').innerHTML = 
+                    `✅ Fare: ₹${data.final_fare} | Distance: ${data.distance_km}km | Time: ${data.estimated_time}`;
+            } catch (error) {
+                document.getElementById('fareResult').innerHTML = 
+                    `❌ Fare Error: ${error.message}`;
+            }
+        }
+
+        async function bookCab() {
+            const pickup = document.getElementById('pickup').value;
+            const dropoff = document.getElementById('dropoff').value;
+            
+            try {
+                const response = await fetch('http://localhost:8000/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_name: 'Test User',
+                        cab_id: 1,
+                        pickup: pickup,
+                        destination: dropoff
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('bookingResult').innerHTML = 
+                    `✅ Booking Success! OTP: ${data.otp} | Fare: ₹${data.fare}`;
+            } catch (error) {
+                document.getElementById('bookingResult').innerHTML = 
+                    `❌ Booking Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cab Booking - Leaflet Map</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-width: 300px;
+        }
+        
+        .input-group {
+            margin-bottom: 10px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .info-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 300px;
+        }
+        
+        .driver-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .driver-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .driver-item:hover {
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>Cab Booking Map</h3>
+        
+        <div class="input-group">
+            <label>Pickup Location:</label>
+            <input type="text" id="pickup" placeholder="Enter pickup address">
+        </div>
+        
+        <div class="input-group">
+            <label>Drop Location:</label>
+            <input type="text" id="dropoff" placeholder="Enter drop address">
+        </div>
+        
+        <button class="btn" onclick="searchRoute()">Find Route</button>
+        <button class="btn btn-success" onclick="findNearbyDrivers()">Find Drivers</button>
+        <button class="btn" onclick="clearMap()">Clear</button>
+    </div>
+    
+    <div class="info-panel" id="infoPanel" style="display: none;">
+        <h4>Route Information</h4>
+        <div id="routeInfo"></div>
+        
+        <h4>Nearby Drivers</h4>
+        <div id="driverList" class="driver-list"></div>
+    </div>
+    
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([28.6139, 77.2090], 13);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Markers and layers
+        let pickupMarker, dropoffMarker, routeLayer;
+        let driverMarkers = [];
+        
+        // API base URL
+        const API_BASE = 'http://localhost:8000/api/maps';
+        
+        // Search for route
+        async function searchRoute() {
+            const pickup = document.getElementById('pickup').value;
+            const dropoff = document.getElementById('dropoff').value;
+            
+            if (!pickup || !dropoff) {
+                alert('Please enter both pickup and drop locations');
+                return;
+            }
+            
+            try {
+                // Geocode pickup location
+                const pickupResponse = await fetch(`${API_BASE}/geocode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: pickup })
+                });
+                const pickupData = await pickupResponse.json();
+                
+                // Geocode dropoff location
+                const dropoffResponse = await fetch(`${API_BASE}/geocode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: dropoff })
+                });
+                const dropoffData = await dropoffResponse.json();
+                
+                // Add markers
+                if (pickupMarker) map.removeLayer(pickupMarker);
+                if (dropoffMarker) map.removeLayer(dropoffMarker);
+                
+                pickupMarker = L.marker([pickupData.lat, pickupData.lng])
+                    .addTo(map)
+                    .bindPopup('Pickup: ' + pickup);
+                
+                dropoffMarker = L.marker([dropoffData.lat, dropoffData.lng])
+                    .addTo(map)
+                    .bindPopup('Drop: ' + dropoff);
+                
+                // Get route
+                const routeResponse = await fetch(`${API_BASE}/route`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        origin_lat: pickupData.lat,
+                        origin_lng: pickupData.lng,
+                        dest_lat: dropoffData.lat,
+                        dest_lng: dropoffData.lng
+                    })
+                });
+                const routeData = await routeResponse.json();
+                
+                // Draw route
+                if (routeLayer) map.removeLayer(routeLayer);
+                
+                const coordinates = routeData.route.coordinates.map(coord => [coord[1], coord[0]]);
+                routeLayer = L.polyline(coordinates, { color: 'blue', weight: 4 }).addTo(map);
+                
+                // Fit map to route
+                const group = new L.featureGroup([pickupMarker, dropoffMarker, routeLayer]);
+                map.fitBounds(group.getBounds().pad(0.1));
+                
+                // Show route info
+                document.getElementById('routeInfo').innerHTML = `
+                    <p><strong>Distance:</strong> ${routeData.distance.distance_text}</p>
+                    <p><strong>Duration:</strong> ${routeData.distance.duration_text}</p>
+                `;
+                document.getElementById('infoPanel').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error finding route. Please try again.');
+            }
+        }
+        
+        // Find nearby drivers
+        async function findNearbyDrivers() {
+            const center = map.getCenter();
+            
+            try {
+                const response = await fetch(`${API_BASE}/nearby-drivers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        lat: center.lat,
+                        lng: center.lng,
+                        radius_km: 5
+                    })
+                });
+                const data = await response.json();
+                
+                // Clear existing driver markers
+                driverMarkers.forEach(marker => map.removeLayer(marker));
+                driverMarkers = [];
+                
+                // Add driver markers
+                const driverIcon = L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+                
+                data.drivers.forEach(driver => {
+                    const marker = L.marker([driver.lat, driver.lng], { icon: driverIcon })
+                        .addTo(map)
+                        .bindPopup(`
+                            <strong>${driver.name}</strong><br>
+                            Rating: ${driver.rating}⭐<br>
+                            Distance: ${driver.distance_km} km<br>
+                            ETA: ${driver.eta_minutes} mins
+                        `);
+                    driverMarkers.push(marker);
+                });
+                
+                // Show driver list
+                const driverListHtml = data.drivers.map(driver => `
+                    <div class="driver-item" onclick="focusDriver(${driver.lat}, ${driver.lng})">
+                        <strong>${driver.name}</strong> - ${driver.rating}⭐<br>
+                        <small>${driver.distance_km} km away, ETA: ${driver.eta_minutes} mins</small>
+                    </div>
+                `).join('');
+                
+                document.getElementById('driverList').innerHTML = driverListHtml;
+                document.getElementById('infoPanel').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error finding drivers. Please try again.');
+            }
+        }
+        
+        // Focus on specific driver
+        function focusDriver(lat, lng) {
+            map.setView([lat, lng], 16);
+        }
+        
+        // Clear map
+        function clearMap() {
+            if (pickupMarker) map.removeLayer(pickupMarker);
+            if (dropoffMarker) map.removeLayer(dropoffMarker);
+            if (routeLayer) map.removeLayer(routeLayer);
+            
+            driverMarkers.forEach(marker => map.removeLayer(marker));
+            driverMarkers = [];
+            
+            document.getElementById('pickup').value = '';
+            document.getElementById('dropoff').value = '';
+            document.getElementById('infoPanel').style.display = 'none';
+        }
+        
+        // Click on map to get coordinates
+        map.on('click', async function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            try {
+                const response = await fetch(`${API_BASE}/reverse-geocode?lat=${lat}&lng=${lng}`);
+                const data = await response.json();
+                
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`
+                        <strong>Location:</strong><br>
+                        ${data.address}<br>
+                        <small>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</small>
+                    `)
+                    .openOn(map);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

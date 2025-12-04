@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cab Booking Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">🚗 Cab Booking Admin</h1>
+            <div class="flex items-center space-x-4">
+                <span>Admin Panel</span>
+                <button class="bg-red-500 px-3 py-1 rounded">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-6">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="text-blue-500 text-3xl mr-4">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Total Users</p>
+                        <p class="text-2xl font-bold" id="totalUsers">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="text-green-500 text-3xl mr-4">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Active Drivers</p>
+                        <p class="text-2xl font-bold" id="activeDrivers">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="text-yellow-500 text-3xl mr-4">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Total Rides</p>
+                        <p class="text-2xl font-bold" id="totalRides">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="text-purple-500 text-3xl mr-4">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Total Revenue</p>
+                        <p class="text-2xl font-bold" id="totalRevenue">₹0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="border-b">
+                <nav class="flex space-x-8 px-6">
+                    <button class="tab-btn active py-4 px-2 border-b-2 border-blue-500 text-blue-600" onclick="showTab('users')">
+                        <i class="fas fa-users mr-2"></i>Users
+                    </button>
+                    <button class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" onclick="showTab('drivers')">
+                        <i class="fas fa-car mr-2"></i>Drivers
+                    </button>
+                    <button class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" onclick="showTab('rides')">
+                        <i class="fas fa-route mr-2"></i>Rides
+                    </button>
+                    <button class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" onclick="showTab('payments')">
+                        <i class="fas fa-credit-card mr-2"></i>Payments
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Users Management</h2>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="loadUsers()">
+                        <i class="fas fa-refresh mr-2"></i>Refresh
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left">ID</th>
+                                <th class="px-4 py-2 text-left">Name</th>
+                                <th class="px-4 py-2 text-left">Email</th>
+                                <th class="px-4 py-2 text-left">Role</th>
+                                <th class="px-4 py-2 text-left">Status</th>
+                                <th class="px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Drivers Tab -->
+            <div id="drivers-tab" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Drivers Management</h2>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="loadDrivers()">
+                        <i class="fas fa-refresh mr-2"></i>Refresh
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left">ID</th>
+                                <th class="px-4 py-2 text-left">Name</th>
+                                <th class="px-4 py-2 text-left">License</th>
+                                <th class="px-4 py-2 text-left">Vehicle</th>
+                                <th class="px-4 py-2 text-left">Status</th>
+                                <th class="px-4 py-2 text-left">Verified</th>
+                                <th class="px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="driversTable">
+                            <tr>
+                                <td colspan="7" class="text-center py-4">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Rides Tab -->
+            <div id="rides-tab" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Rides Management</h2>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="loadRides()">
+                        <i class="fas fa-refresh mr-2"></i>Refresh
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left">ID</th>
+                                <th class="px-4 py-2 text-left">Rider</th>
+                                <th class="px-4 py-2 text-left">Driver</th>
+                                <th class="px-4 py-2 text-left">From</th>
+                                <th class="px-4 py-2 text-left">To</th>
+                                <th class="px-4 py-2 text-left">Fare</th>
+                                <th class="px-4 py-2 text-left">Status</th>
+                                <th class="px-4 py-2 text-left">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ridesTable">
+                            <tr>
+                                <td colspan="8" class="text-center py-4">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="payments-tab" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Payments Management</h2>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="loadPayments()">
+                        <i class="fas fa-refresh mr-2"></i>Refresh
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left">ID</th>
+                                <th class="px-4 py-2 text-left">Ride ID</th>
+                                <th class="px-4 py-2 text-left">Amount</th>
+                                <th class="px-4 py-2 text-left">Method</th>
+                                <th class="px-4 py-2 text-left">Status</th>
+                                <th class="px-4 py-2 text-left">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTable">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        // Tab functionality
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            event.target.classList.add('active', 'border-blue-500', 'text-blue-600');
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+            
+            switch(tabName) {
+                case 'users': loadUsers(); break;
+                case 'drivers': loadDrivers(); break;
+                case 'rides': loadRides(); break;
+                case 'payments': loadPayments(); break;
+            }
+        }
+
+        async function loadStats() {
+            document.getElementById('totalUsers').textContent = '150';
+            document.getElementById('activeDrivers').textContent = '45';
+            document.getElementById('totalRides').textContent = '1,234';
+            document.getElementById('totalRevenue').textContent = '₹1,25,000';
+        }
+
+        async function loadUsers() {
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = `
+                <tr class="border-b">
+                    <td class="px-4 py-2">1</td>
+                    <td class="px-4 py-2">John Doe</td>
+                    <td class="px-4 py-2">john@example.com</td>
+                    <td class="px-4 py-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Rider</span></td>
+                    <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded">Active</span></td>
+                    <td class="px-4 py-2">
+                        <button class="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
+                        <button class="text-red-500 hover:text-red-700">Block</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function loadDrivers() {
+            const tbody = document.getElementById('driversTable');
+            tbody.innerHTML = `
+                <tr class="border-b">
+                    <td class="px-4 py-2">1</td>
+                    <td class="px-4 py-2">Jane Smith</td>
+                    <td class="px-4 py-2">DL1234567890</td>
+                    <td class="px-4 py-2">Honda City</td>
+                    <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded">Active</span></td>
+                    <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded">Verified</span></td>
+                    <td class="px-4 py-2">
+                        <button class="text-blue-500 hover:text-blue-700 mr-2">View</button>
+                        <button class="text-red-500 hover:text-red-700">Suspend</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function loadRides() {
+            const tbody = document.getElementById('ridesTable');
+            tbody.innerHTML = `
+                <tr class="border-b">
+                    <td class="px-4 py-2">1001</td>
+                    <td class="px-4 py-2">John Doe</td>
+                    <td class="px-4 py-2">Jane Smith</td>
+                    <td class="px-4 py-2">Delhi Center</td>
+                    <td class="px-4 py-2">IGI Airport</td>
+                    <td class="px-4 py-2">₹450</td>
+                    <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded">Completed</span></td>
+                    <td class="px-4 py-2">2024-01-15</td>
+                </tr>
+            `;
+        }
+
+        async function loadPayments() {
+            const tbody = document.getElementById('paymentsTable');
+            tbody.innerHTML = `
+                <tr class="border-b">
+                    <td class="px-4 py-2">P001</td>
+                    <td class="px-4 py-2">1001</td>
+                    <td class="px-4 py-2">₹450</td>
+                    <td class="px-4 py-2">Card</td>
+                    <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded">Completed</span></td>
+                    <td class="px-4 py-2">2024-01-15</td>
+                </tr>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadUsers();
+        });
+    </script>
+</body>
+</html>

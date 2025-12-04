@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CabGo - Professional Cab Booking</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Login Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 400px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .booking-form {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            z-index: 1;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            max-width: 300px;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .info-panel.show {
+            transform: translateX(0);
+        }
+
+        .info-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .route-info {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .route-info p {
+            margin-bottom: 0.5rem;
+            color: #475569;
+        }
+
+        .route-info strong {
+            color: #1e293b;
+        }
+
+        /* Driver List */
+        .driver-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .driver-item {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .driver-item:hover {
+            background: #f1f5f9;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .driver-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .driver-details {
+            font-size: 0.85rem;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .rating {
+            color: #f59e0b;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .map-container {
+                height: 400px;
+                order: 1;
+            }
+            
+            .info-panel {
+                position: relative;
+                top: 0;
+                right: 0;
+                transform: none;
+                max-width: none;
+                margin-top: 1rem;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        .driver-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .driver-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .driver-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .driver-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .protected-content {
+            display: none;
+        }
+
+        .protected-content.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Welcome to CabGo</h2>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchAuthTab('login')">Login</div>
+                <div class="auth-tab" onclick="switchAuthTab('register')">Register</div>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="input-group">
+                    <label>Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" class="form-input" name="email" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-input" name="password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" class="form-input" name="name" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" class="form-input" name="email" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Phone</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" class="form-input" name="phone" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-input" name="password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Register
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-taxi"></i>
+                CabGo
+            </div>
+            <div class="user-info">
+                <span id="userWelcome">Welcome!</span>
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button class="logout-btn" onclick="authManager.logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container protected-content" id="mainContent">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="booking-form">
+                <h2 class="form-title">
+                    <i class="fas fa-route"></i>
+                    Book Your Ride
+                </h2>
+                
+                <div class="input-group">
+                    <label for="pickup">Pickup Location</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input type="text" id="pickup" class="form-input" placeholder="Enter pickup address">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="dropoff">Drop Location</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-flag-checkered"></i>
+                        <input type="text" id="dropoff" class="form-input" placeholder="Enter destination">
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="searchRoute()">
+                    <i class="fas fa-search"></i>
+                    <span class="loading"></span>
+                    Find Route
+                </button>
+                
+                <button class="btn btn-success" onclick="findNearbyDrivers()">
+                    <i class="fas fa-car"></i>
+                    Find Drivers
+                </button>
+                
+                <button class="btn btn-secondary" onclick="clearMap()">
+                    <i class="fas fa-refresh"></i>
+                    Clear Map
+                </button>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <!-- Info Panel -->
+            <div class="info-panel" id="infoPanel">
+                <div class="info-title">
+                    <i class="fas fa-info-circle"></i>
+                    Trip Details
+                </div>
+                
+                <div class="route-info" id="routeInfo">
+                    <p><strong>Distance:</strong> <span id="distance">-</span></p>
+                    <p><strong>Duration:</strong> <span id="duration">-</span></p>
+                    <p><strong>Estimated Fare:</strong> <span id="fare">-</span></p>
+                </div>
+                
+                <div class="info-title">
+                    <i class="fas fa-users"></i>
+                    Available Drivers
+                </div>
+                
+                <div class="driver-list" id="driverList">
+                    <p style="text-align: center; color: #64748b;">Click "Find Drivers" to see available drivers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="auth.js"></script>
+    
+    <script>
+        // Auth functions
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchAuthTab('${tab}')"]`).classList.add('active');
+            document.getElementById(tab + 'Form').classList.add('active');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function initializeApp() {
+            document.getElementById('mainContent').classList.add('show');
+            document.getElementById('userWelcome').textContent = `Welcome, ${authManager.currentUser.name}!`;
+            authManager.hideLoginModal();
+            initializeMap();
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideError();
+            
+            const formData = new FormData(this);
+            const email = formData.get('email');
+            const password = formData.get('password');
+            
+            const result = await authManager.login(email, password);
+            
+            if (result.success) {
+                initializeApp();
+            } else {
+                showError(result.message);
+            }
+        });
+
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideError();
+            
+            const formData = new FormData(this);
+            const userData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                password: formData.get('password')
+            };
+            
+            const result = await authManager.register(userData);
+            
+            if (result.success) {
+                switchAuthTab('login');
+                showError('Registration successful! Please login.');
+            } else {
+                showError(result.message);
+            }
+        });
+        
+        function initializeMap() {
+        // Initialize map
+        const map = L.map('map').setView([28.6139, 77.2090], 13);
+        
+        // Add tile layer with custom style
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Markers and layers
+        let pickupMarker, dropoffMarker, routeLayer;
+        let driverMarkers = [];
+        
+        // API base URL
+        const API_BASE = 'http://localhost:8000/api/maps';
+        
+        // Custom marker icons
+        const pickupIcon = L.divIcon({
+            html: '<i class="fas fa-map-marker-alt" style="color: #10b981; font-size: 24px;"></i>',
+            iconSize: [30, 30],
+            className: 'custom-div-icon'
+        });
+        
+        const dropoffIcon = L.divIcon({
+            html: '<i class="fas fa-flag-checkered" style="color: #ef4444; font-size: 24px;"></i>',
+            iconSize: [30, 30],
+            className: 'custom-div-icon'
+        });
+        
+        const driverIcon = L.divIcon({
+            html: '<i class="fas fa-car" style="color: #667eea; font-size: 20px;"></i>',
+            iconSize: [25, 25],
+            className: 'custom-div-icon'
+        });
+        
+        // Show loading
+        function showLoading(button) {
+            const loading = button.querySelector('.loading');
+            const text = button.querySelector('i').nextSibling;
+            loading.style.display = 'inline-block';
+            button.disabled = true;
+        }
+        
+        // Hide loading
+        function hideLoading(button) {
+            const loading = button.querySelector('.loading');
+            loading.style.display = 'none';
+            button.disabled = false;
+        }
+        
+        // Search for route
+        async function searchRoute() {
+            const pickup = document.getElementById('pickup').value;
+            const dropoff = document.getElementById('dropoff').value;
+            const button = event.target;
+            
+            if (!pickup || !dropoff) {
+                alert('Please enter both pickup and drop locations');
+                return;
+            }
+            
+            showLoading(button);
+            
+            try {
+                // Geocode pickup location
+                const pickupResponse = await fetch(`${API_BASE}/geocode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: pickup })
+                });
+                const pickupData = await pickupResponse.json();
+                
+                // Geocode dropoff location
+                const dropoffResponse = await fetch(`${API_BASE}/geocode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: dropoff })
+                });
+                const dropoffData = await dropoffResponse.json();
+                
+                // Add markers
+                if (pickupMarker) map.removeLayer(pickupMarker);
+                if (dropoffMarker) map.removeLayer(dropoffMarker);
+                
+                pickupMarker = L.marker([pickupData.lat, pickupData.lng], { icon: pickupIcon })
+                    .addTo(map)
+                    .bindPopup(`<strong>Pickup:</strong><br>${pickup}`);
+                
+                dropoffMarker = L.marker([dropoffData.lat, dropoffData.lng], { icon: dropoffIcon })
+                    .addTo(map)
+                    .bindPopup(`<strong>Drop:</strong><br>${dropoff}`);
+                
+                // Get route
+                const routeResponse = await fetch(`${API_BASE}/route`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        origin_lat: pickupData.lat,
+                        origin_lng: pickupData.lng,
+                        dest_lat: dropoffData.lat,
+                        dest_lng: dropoffData.lng
+                    })
+                });
+                const routeData = await routeResponse.json();
+                
+                // Draw route
+                if (routeLayer) map.removeLayer(routeLayer);
+                
+                const coordinates = routeData.route.coordinates.map(coord => [coord[1], coord[0]]);
+                routeLayer = L.polyline(coordinates, { 
+                    color: '#667eea', 
+                    weight: 4,
+                    opacity: 0.8
+                }).addTo(map);
+                
+                // Fit map to route
+                const group = new L.featureGroup([pickupMarker, dropoffMarker, routeLayer]);
+                map.fitBounds(group.getBounds().pad(0.1));
+                
+                // Calculate fare (basic calculation)
+                const distance = parseFloat(routeData.distance.distance_text);
+                const baseFare = 50;
+                const perKmRate = 12;
+                const estimatedFare = baseFare + (distance * perKmRate);
+                
+                // Show route info
+                document.getElementById('distance').textContent = routeData.distance.distance_text;
+                document.getElementById('duration').textContent = routeData.distance.duration_text;
+                document.getElementById('fare').textContent = `₹${estimatedFare.toFixed(0)}`;
+                
+                document.getElementById('infoPanel').classList.add('show');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error finding route. Please try again.');
+            } finally {
+                hideLoading(button);
+            }
+        }
+        
+        // Find nearby drivers
+        async function findNearbyDrivers() {
+            const center = map.getCenter();
+            const button = event.target;
+            
+            showLoading(button);
+            
+            try {
+                const response = await fetch(`${API_BASE}/nearby-drivers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        lat: center.lat,
+                        lng: center.lng,
+                        radius_km: 5
+                    })
+                });
+                const data = await response.json();
+                
+                // Clear existing driver markers
+                driverMarkers.forEach(marker => map.removeLayer(marker));
+                driverMarkers = [];
+                
+                // Add driver markers
+                data.drivers.forEach(driver => {
+                    const marker = L.marker([driver.lat, driver.lng], { icon: driverIcon })
+                        .addTo(map)
+                        .bindPopup(`
+                            <div style="text-align: center;">
+                                <strong>${driver.name}</strong><br>
+                                <span style="color: #f59e0b;">★ ${driver.rating}</span><br>
+                                <small>${driver.distance_km} km • ${driver.eta_minutes} mins</small>
+                            </div>
+                        `);
+                    driverMarkers.push(marker);
+                });
+                
+                // Show driver list
+                const driverListHtml = data.drivers.map(driver => `
+                    <div class="driver-item fade-in" onclick="focusDriver(${driver.lat}, ${driver.lng})">
+                        <div class="driver-name">${driver.name}</div>
+                        <div class="driver-details">
+                            <span class="rating">★ ${driver.rating}</span>
+                            <span>${driver.distance_km} km • ${driver.eta_minutes} mins</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('driverList').innerHTML = driverListHtml;
+                document.getElementById('infoPanel').classList.add('show');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error finding drivers. Please try again.');
+            } finally {
+                hideLoading(button);
+            }
+        }
+        
+        // Focus on specific driver
+        function focusDriver(lat, lng) {
+            map.setView([lat, lng], 16);
+        }
+        
+        // Clear map
+        function clearMap() {
+            if (pickupMarker) map.removeLayer(pickupMarker);
+            if (dropoffMarker) map.removeLayer(dropoffMarker);
+            if (routeLayer) map.removeLayer(routeLayer);
+            
+            driverMarkers.forEach(marker => map.removeLayer(marker));
+            driverMarkers = [];
+            
+            document.getElementById('pickup').value = '';
+            document.getElementById('dropoff').value = '';
+            document.getElementById('infoPanel').classList.remove('show');
+            
+            // Reset info panel
+            document.getElementById('distance').textContent = '-';
+            document.getElementById('duration').textContent = '-';
+            document.getElementById('fare').textContent = '-';
+            document.getElementById('driverList').innerHTML = '<p style="text-align: center; color: #64748b;">Click "Find Drivers" to see available drivers</p>';
+        }
+        
+        // Click on map to get coordinates
+        map.on('click', async function(e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            try {
+                const response = await fetch(`${API_BASE}/reverse-geocode?lat=${lat}&lng=${lng}`);
+                const data = await response.json();
+                
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`
+                        <div style="text-align: center;">
+                            <strong>📍 Location</strong><br>
+                            ${data.address}<br>
+                            <small style="color: #64748b;">${lat.toFixed(6)}, ${lng.toFixed(6)}</small>
+                        </div>
+                    `)
+                    .openOn(map);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+        
+        }
+        
+        // Add some smooth animations
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authManager.isLoggedIn()) {
+                initializeApp();
+            }
+            
+            const sidebar = document.querySelector('.sidebar');
+            const mapContainer = document.querySelector('.map-container');
+            
+            setTimeout(() => {
+                sidebar.classList.add('fade-in');
+                mapContainer.classList.add('fade-in');
+            }, 100);
+        });
+    </script>
+</body>
+</html>
