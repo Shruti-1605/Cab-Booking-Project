@@ -107,8 +107,6 @@ cab-project/
 └── README.md
 ```
 
-## Project Screenshots
-
 ### Screenshot 75
 ![Screenshot 75](Cab-Booking-Project/Images/Screenshot (75).png)
 
