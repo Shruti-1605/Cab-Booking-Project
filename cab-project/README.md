@@ -109,64 +109,26 @@ cab-project/
 
 ## Project Screenshots
 
-<table>
-<tr>
-<td>
-
 ### Screenshot 75
 ![Screenshot 75](Cab-Booking-Project/Images/Screenshot (75).png)
-
-</td>
-<td>
 
 ### Screenshot 76
 ![Screenshot 76](Cab-Booking-Project/Images/Screenshot (76).png)
 
-</td>
-<td>
-
 ### Screenshot 77
 ![Screenshot 77](Cab-Booking-Project/Images/Screenshot_77.png)
-
-</td>
-</tr>
-
-<tr>
-<td>
 
 ### Screenshot 78
 ![Screenshot 78](Cab-Booking-Project/Images/Screenshot (78).png)
 
-</td>
-<td>
-
 ### Screenshot 79
 ![Screenshot 79](Cab-Booking-Project/Images/Screenshot (79).png)
-
-</td>
-<td>
 
 ### Screenshot 80
 ![Screenshot 80](Cab-Booking-Project/Images/Screenshot (80).png)
 
-</td>
-</tr>
-
-<tr>
-<td>
-
 ### Screenshot 82
 ![Screenshot 82](Cab-Booking-Project/Images/Screenshot (82).png)
 
-</td>
-<td>
-
 ### Screenshot 83
 ![Screenshot 83](Cab-Booking-Project/Images/Screenshot (83).png)
-
-</td>
-<td>
-
-</td>
-</tr>
-</table>
