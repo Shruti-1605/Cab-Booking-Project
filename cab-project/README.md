@@ -107,12 +107,29 @@ cab-project/
 └── README.md
 ```
 
-![Screenshot 75](Cab-Booking-Project/Images/Screenshot%20(75).png)
-![Screenshot 76](Cab-Booking-Project/Images/Screenshot%20(76).png)
-![Screenshot 77](Cab-Booking-Project/Images/Screenshot%20(77).png)
-![Screenshot 78](Cab-Booking-Project/Images/Screenshot%20(78).png)
-![Screenshot 79](Cab-Booking-Project/Images/Screenshot%20(79).png)
-![Screenshot 80](Cab-Booking-Project/Images/Screenshot%20(80).png)
-![Screenshot 82](Cab-Booking-Project/Images/Screenshot%20(82).png)
-![Screenshot 83](Cab-Booking-Project/Images/Screenshot%20(83).png)
+## Project Screenshots
+
+### Screenshot 75
+![Screenshot 75](cab-project/Images/Screenshot (75).png)
+
+### Screenshot 76
+![Screenshot 76](cab-project/Images/Screenshot (76).png)
+
+### Screenshot 77
+![Screenshot 77](cab-project/Images/Screenshot_77.png)
+
+### Screenshot 78
+![Screenshot 78](cab-project/Images/Screenshot (78).png)
+
+### Screenshot 79
+![Screenshot 79](cab-project/Images/Screenshot (79).png)
+
+### Screenshot 80
+![Screenshot 80](cab-project/Images/Screenshot (80).png)
+
+### Screenshot 82
+![Screenshot 82](cab-project/Images/Screenshot (82).png)
+
+### Screenshot 83
+![Screenshot 83](cab-project/Images/Screenshot (83).png)
 
