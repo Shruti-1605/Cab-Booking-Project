@@ -166,33 +166,8 @@ cab-booking-system/
 ✅ **Responsive Design** - Mobile-friendly interface  
 ✅ **Live Data** - Real-time updates across all modules  
 
-## 🔮 Future Enhancements
 
-- 🌍 **GPS Tracking** - Real-time driver location
-- 📱 **Mobile App** - React Native implementation  
-- 🔔 **Push Notifications** - Real-time alerts
-- 📈 **Analytics Dashboard** - Advanced reporting
-- 🤖 **AI Integration** - Smart route optimization
-- 💬 **Chat System** - Driver-rider communication
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Developer
-
-**Your Name**  
-📧 Email: your.email@example.com  
-🔗 LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)  
-🐙 GitHub: [Your GitHub](https://github.com/yourusername)
 
 ## 🙏 Acknowledgments
 
@@ -204,36 +179,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-⭐ **Star this repository if you found it helpful!**
-
-🐛 **Found a bug?** [Create an issue](https://github.com/your-username/cab-booking-system/issues)
-
-💡 **Have suggestions?** [Start a discussion](https://github.com/your-username/cab-booking-system/discussions)
 
 
 
-## Project Screenshots
-
-### Screenshot 75
-![Screenshot 75](cab-project/Images/Screenshot (75).png)
-
-### Screenshot 76
-![Screenshot 76](cab-project/Images/Screenshot (76).png)
-
-### Screenshot 77
-![Screenshot 77](cab-project/Images/Screenshot_77.png)
-
-### Screenshot 78
-![Screenshot 78](cab-project/Images/Screenshot (78).png)
-
-### Screenshot 79
-![Screenshot 79](cab-project/Images/Screenshot (79).png)
-
-### Screenshot 80
-![Screenshot 80](cab-project/Images/Screenshot (80).png)
-
-### Screenshot 82
-![Screenshot 82](cab-project/Images/Screenshot (82).png)
-
-### Screenshot 83
-![Screenshot 83](cab-project/Images/Screenshot (83).png)
